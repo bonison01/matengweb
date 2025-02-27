@@ -12,6 +12,7 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
+        submodules: true  # Add this line to checkout submodules
 
       - name: Set Up Node.js
         uses: actions/setup-node@v3
