@@ -56,7 +56,7 @@ export default function DiscoverPage() {
               </div>
             </div>
             <div className={styles.buttonContainer}>
-              <Link href="/discover" className={styles.button}>Discover Now</Link>
+              <Link href="/discover/product" className={styles.button}>Marketplace</Link>
               <Link href="https://wa.link/5b9wah" className={styles.button}>Get Delivery Service</Link>
               <Link href="/delivery-rates" className={styles.button}>Delivery Rates</Link>
             </div>
