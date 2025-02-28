@@ -22,7 +22,6 @@ interface Product {
 
 const AllProductMediaPage = () => {
   const [products, setProducts] = useState<Product[]>([]);
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -30,6 +29,7 @@ const AllProductMediaPage = () => {
   const [showModal, setShowModal] = useState<boolean>(false);
   const [categories, setCategories] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [categoryWiseProducts, setCategoryWiseProducts] = useState<{ [key: string]: Product[] }>({});
 
   const router = useRouter();
   const { addToCart } = useCart();
@@ -40,10 +40,21 @@ const AllProductMediaPage = () => {
         const { data, error } = await supabase.from('new_products').select('*');
         if (error) throw new Error(error.message);
         setProducts(data || []);
-        setFilteredProducts(data || []);
 
         const allCategories = [...new Set(data?.map((product) => product.category))];
         setCategories(allCategories);
+
+        // Group products by category
+        const groupedByCategory = data?.reduce((acc: { [key: string]: Product[] }, product) => {
+          if (product.category) {
+            if (!acc[product.category]) {
+              acc[product.category] = [];
+            }
+            acc[product.category].push(product);
+          }
+          return acc;
+        }, {});
+        setCategoryWiseProducts(groupedByCategory || {});
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An unexpected error occurred.');
       } finally {
@@ -84,25 +95,6 @@ const AllProductMediaPage = () => {
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-    filterProducts(e.target.value, selectedCategory);
-  };
-
-  const filterProducts = (search: string, category: string | null) => {
-    let filtered = products;
-
-    if (search) {
-      filtered = filtered.filter(
-        (product) =>
-          product.name.toLowerCase().includes(search.toLowerCase()) ||
-          product.description.toLowerCase().includes(search.toLowerCase())
-      );
-    }
-
-    if (category) {
-      filtered = filtered.filter((product) => product.category === category);
-    }
-
-    setFilteredProducts(filtered);
   };
 
   const openModal = (product: Product) => {
@@ -124,14 +116,16 @@ const AllProductMediaPage = () => {
       <div className="flex flex-col items-center justify-center text-center">
         <h1 className="text-4xl font-bold text-white-800 md:text-6xl">Explore Products</h1>
         <h2 className="text-2xl text-white-200 md:text-1xl mt-2">The buying options will be available starting 2nd March 2025.</h2>
-      
 
-      <button className="mt-6 inline-block bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-white hover:text-green-600" onClick={() => router.push('/discover')}>
-        Explore Sellers
-      </button>
+        <button
+          className="mt-6 inline-block bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-white hover:text-green-600"
+          onClick={() => router.push('/discover')}
+        >
+          Explore Sellers
+        </button>
       </div>
 
-      {/* Category Filter (Mobile Dropdown) */}
+      {/* Category Filter */}
       <div className={styles.categoryButtons}>
         <div className="hidden md:block">
           {categories.map((category, index) => (
@@ -140,7 +134,6 @@ const AllProductMediaPage = () => {
               className={`${styles.categoryButton} ${selectedCategory === category ? styles.selected : ''}`}
               onClick={() => {
                 setSelectedCategory(category);
-                filterProducts(searchTerm, category);
               }}
             >
               {category}
@@ -150,7 +143,6 @@ const AllProductMediaPage = () => {
             className={`${styles.categoryButton} ${!selectedCategory ? styles.selected : ''}`}
             onClick={() => {
               setSelectedCategory(null);
-              filterProducts(searchTerm, null);
             }}
           >
             All Categories
@@ -165,7 +157,6 @@ const AllProductMediaPage = () => {
             onChange={(e) => {
               const category = e.target.value;
               setSelectedCategory(category || null);
-              filterProducts(searchTerm, category || null);
             }}
           >
             <option value="">All Categories</option>
@@ -189,47 +180,66 @@ const AllProductMediaPage = () => {
         />
       </div>
 
-      <a href="/cart" className="text-2xl font-bold mb-5 text-gray-500 hover:text-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500">
+      <a
+        href="/cart"
+        className="text-2xl font-bold mb-5 text-gray-500 hover:text-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      >
         My carts🛒
       </a>
 
-      <div className={styles.productList}>
-        {filteredProducts.map((product) => (
-          <div key={product.id} className={styles.mediaItem}>
-            <div onClick={() => openModal(product)} className={styles.mediaContentWrapper}>
-              {product.media_urls.map((url, index) => {
-                const isVideo = /\.(mp4|webm|ogg)$/i.test(url);
-                return isVideo ? (
-                  <video key={index} src={url} autoPlay loop muted playsInline className={styles.mediaContent}></video>
-                ) : (
-                  <img key={index} src={url} alt={`Product ${product.id}`} className={styles.mediaContent} />
-                );
-              })}
-            </div>
+      {/* Render Products Category-wise */}
+      {categories.map((category) => {
+        if (selectedCategory && selectedCategory !== category) return null; // Filter categories based on selection
 
-            <div className={styles.overlay}>
-              <div className={styles.productInfo}>
-                <h2 className={styles.productName}>{product.name}</h2>
-              </div>
-              <div className={styles.actionIcons}>
-                {product.phone && (
-                  <button className={styles.callIcon} onClick={() => handleCall(product.phone)} aria-label="Call">
-                    📞
-                  </button>
-                )}
-                {product.whatsapp && (
-                  <button className={styles.whatsappIcon} onClick={() => handleWhatsApp(product.whatsapp)} aria-label="WhatsApp">
-                    💬
-                  </button>
-                )}
-                <button className={styles.infoButton} onClick={() => openModal(product)} aria-label="More Info">
-                  ℹ️
-                </button>
-              </div>
+        const categoryProducts = categoryWiseProducts[category] || [];
+
+        return categoryProducts.length > 0 ? (
+          <div key={category} className={styles.categorySection}>
+            <h2 className={styles.categoryTitle}>{category}</h2>
+            <div className={styles.productList}>
+              {categoryProducts.map((product) => (
+                <div key={product.id} className={styles.mediaItem}>
+                  <div onClick={() => openModal(product)} className={styles.mediaContentWrapper}>
+                    {product.media_urls.map((url, index) => {
+                      const isVideo = /\.(mp4|webm|ogg)$/i.test(url);
+                      return isVideo ? (
+                        <video key={index} src={url} autoPlay loop muted playsInline className={styles.mediaContent}></video>
+                      ) : (
+                        <img key={index} src={url} alt={`Product ${product.id}`} className={styles.mediaContent} />
+                      );
+                    })}
+                  </div>
+
+                  <div className={styles.overlay}>
+                    <div className={styles.productInfo}>
+                      <h2 className={styles.productName}>{product.name}</h2>
+                    </div>
+                    <div className={styles.actionIcons}>
+                      {product.phone && (
+                        <button className={styles.callIcon} onClick={() => handleCall(product.phone)} aria-label="Call">
+                          📞
+                        </button>
+                      )}
+                      {product.whatsapp && (
+                        <button
+                          className={styles.whatsappIcon}
+                          onClick={() => handleWhatsApp(product.whatsapp)}
+                          aria-label="WhatsApp"
+                        >
+                          💬
+                        </button>
+                      )}
+                      <button className={styles.infoButton} onClick={() => openModal(product)} aria-label="More Info">
+                        ℹ️
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
-        ))}
-      </div>
+        ) : null;
+      })}
 
       {showModal && selectedProduct && (
         <div className={styles.modalOverlay} onClick={closeModal}>

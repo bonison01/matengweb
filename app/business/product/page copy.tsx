@@ -18,6 +18,7 @@ interface Product {
   category: string;
   price_inr: number;
   media_urls: string[];
+  discounted_price?: number; // Optional field for discounted price
 }
 
 export default function ProductUploadPage() {
@@ -38,6 +39,9 @@ export default function ProductUploadPage() {
   const [error, setError] = useState<string | null>(null);
   const [category, setCategory] = useState<string>('');  // New state for category
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [discountRate, setDiscountRate] = useState<number>(0); // New state for discount rate
+const [discountedPrice, setDiscountedPrice] = useState<number>(0); // New state for discounted price
+
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -75,7 +79,18 @@ export default function ProductUploadPage() {
       setProducts(productsData || []);
     }
   };
-
+  const handleDiscountRateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rate = parseFloat(e.target.value);
+    setDiscountRate(rate);
+    setDiscountedPrice(productPrice ? parseFloat(productPrice) * (1 - rate / 100) : 0);
+  };
+  
+  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const price = e.target.value;
+    setProductPrice(price);
+    setDiscountedPrice(price ? parseFloat(price) * (1 - discountRate / 100) : 0);
+  };
+  
 
   const handleDelete = async (productId: number) => {
     if (!user) {
@@ -172,17 +187,36 @@ export default function ProductUploadPage() {
     setSuccessMessage(null);
   
     try {
+      // Fetch the user's name from the 'users' table
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('name')
+        .eq('user_id', user.user_id)
+        .single();
+  
+      if (userError || !userData) {
+        throw new Error('Failed to fetch user name.');
+      }
+  
+      // Get the user's name
+      const userName = userData.name;
+  
+      // Upload media files and get their URLs
       const mediaUrls = await uploadMediaFiles(productMedia, user.user_id);
   
+      // Insert product data into the 'new_products' table
       const { error: dbError } = await supabase
         .from('new_products')
         .insert({
           user_id: user.user_id,
+          user_name: userName,  // Add the user's name here
           name: productName,
           description: productDescription,
           price_inr: parseFloat(productPrice),
           media_urls: mediaUrls,
-          category: category, // Add the category here
+          category: category,
+          discount_rate: discountRate,  // Store the discount rate
+          discounted_price: discountedPrice,  // Store the discounted price
         });
   
       if (dbError) throw new Error('Failed to save product.');
@@ -193,7 +227,9 @@ export default function ProductUploadPage() {
       setProductPrice('');
       setProductMedia([]);
       setMediaPreviews([]);
-      setCategory('');  // Reset the category after upload
+      setDiscountRate(0);
+      setDiscountedPrice(0);
+      setCategory('');
       fetchProducts(user.user_id);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unknown error occurred.');
@@ -201,7 +237,7 @@ export default function ProductUploadPage() {
       setUploading(false);
     }
   };
-  
+      
   const handleEdit = (product: Product) => {
     setEditingProductId(product.id);
     setUpdatedName(product.name);
@@ -296,6 +332,29 @@ export default function ProductUploadPage() {
         </div>
 
         <div className={styles.formGroup}>
+  <label htmlFor="discountRate">Discount Rate (%)</label>
+  <input
+    id="discountRate"
+    type="number"
+    value={discountRate}
+    onChange={handleDiscountRateChange}
+    className={styles.input}
+  />
+</div>
+
+<div className={styles.formGroup}>
+  <label htmlFor="discountedPrice">Discounted Price (INR)</label>
+  <input
+    id="discountedPrice"
+    type="number"
+    value={discountedPrice.toFixed(2)}
+    disabled
+    className={styles.input}
+  />
+</div>
+
+
+        <div className={styles.formGroup}>
           <label htmlFor="productMedia">Product Images/Videos</label>
           <input
             id="productMedia"
@@ -327,10 +386,12 @@ export default function ProductUploadPage() {
     className={styles.select}
   >
     <option value="">Select a category</option>
+    <option value="electronics">Grocery</option>
+    <option value="electronics">Books</option>
     <option value="electronics">Electronics</option>
     <option value="fashion">Fashion</option>
     <option value="furniture">Furniture</option>
-    <option value="books">Books</option>
+    <option value="books">Others</option>
     {/* Add more categories here */}
   </select>
 </div>
@@ -354,6 +415,13 @@ export default function ProductUploadPage() {
                 <img key={index} src={url} alt={`Product ${product.id}`} className={styles.thumbnail} />
               ))}
             </div>
+            <div>
+              {product.discounted_price !== undefined && product.discounted_price > 0 && (
+                <p>Discounted Price: ₹{product.discounted_price.toFixed(2)}</p>
+              )}
+            </div>
+
+
             <div>
               <button onClick={() => handleEdit(product)} className={styles.editButton}>
                 Edit
@@ -403,6 +471,7 @@ export default function ProductUploadPage() {
                 className={styles.input}
               />
             </div>
+            
 
             <div className={styles.formGroup}>
               <label htmlFor="updatedMedia">Update Images/Videos</label>

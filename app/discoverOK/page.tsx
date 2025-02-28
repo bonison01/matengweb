@@ -25,7 +25,6 @@ type Product = {
   user_id: string;
   name: string;
   description: string;
-  price_inr: string;
   media_urls: string[];
 };
 
@@ -84,7 +83,7 @@ export default function Discover() {
     <div className={styles.container}>
       <section className="bg-black py-16">
         <div className="container mx-auto px-6 text-center">
-          <h1 className="text-4xl font-bold text-white-800 md:text-6xl">
+        <h1 className="text-4xl font-bold text-white md:text-6xl">
             Welcome to Mateng Discovery
           </h1>
           <p className="mt-4 text-gray-600">
@@ -98,8 +97,6 @@ export default function Discover() {
           </Link>
         </div>
       </section>
-      <h1>Discover Businesses</h1>
-
       {/* Search and Filter Inputs */}
       <div className={styles.searchFilter}>
         <input
@@ -122,47 +119,30 @@ export default function Discover() {
         </div>
       </div>
 
-      {/* Product Section */}
-      <div className={styles.productSection}>
-        <h2 className={styles.subheading}>Explore All Products</h2>
-        {loadingProducts ? (
-          <p className={styles.loading}>Loading Products...</p>
-        ) : productError ? (
-          <p className={styles.error}>{productError}</p>
-        ) : products.length === 0 ? (
-          <p className={styles.noProducts}>No products found.</p>
-        ) : (
-          <div className={styles.mediaGrid}>
-            {products.map((product) => (
-              <div key={product.id} className={styles.productCard}>
-                <h3 className={styles.productName}>{product.name}</h3>
-                <p className={styles.productDescription}>{product.description}</p>
-                <p className={styles.productDescription}>{product.price_inr}</p>
-                <div className={styles.mediaContainer}>
-                  {product.media_urls.map((url, index) => {
-                    const isVideo = /\.(mp4|webm|ogg)$/i.test(url);
-                    return isVideo ? (
-                      <video
-                        key={index}
-                        src={url}
-                        controls
-                        className={styles.mediaItem}
-                      ></video>
-                    ) : (
-                      <img
-                        key={index}
-                        src={url}
-                        alt={`Product ${product.id} - Media ${index + 1}`}
-                        className={styles.mediaItem}
-                      />
-                    );
-                  })}
+      <div className={styles.content}>
+        {/* Business List */}
+        <div className={styles.businessSection}>
+          {filteredBusinesses.map((business) => (
+            <div
+              key={business.user_id}
+              className={styles.businessCard}
+              onClick={() => setSelectedBusiness(business)}
+            >
+              <h3>{business.business_name}</h3>
+              <p>{business.product_service}</p>
+              {/* Optional photo */}
+              {business.photo && (
+                <div className={styles.photoFrame}>
+                  <img src={business.photo} alt={business.business_name} className={styles.photo} />
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
+              )}
+            </div>
+          ))}
+        </div>
+
       </div>
+
+
 
       {/* Business Modal */}
       {selectedBusiness && (

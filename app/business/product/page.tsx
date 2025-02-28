@@ -177,11 +177,6 @@ const [discountedPrice, setDiscountedPrice] = useState<number>(0); // New state 
       return;
     }
   
-    if (!productName || !productDescription || !productPrice || productMedia.length === 0 || !category) {
-      setError('All fields are required.');
-      return;
-    }
-  
     setUploading(true);
     setError(null);
     setSuccessMessage(null);
@@ -201,22 +196,25 @@ const [discountedPrice, setDiscountedPrice] = useState<number>(0); // New state 
       // Get the user's name
       const userName = userData.name;
   
-      // Upload media files and get their URLs
-      const mediaUrls = await uploadMediaFiles(productMedia, user.user_id);
+      // If productPrice is provided, use it. If not, default to 0.
+      const priceInr = productPrice ? parseFloat(productPrice) : 0;
+  
+      // If media is provided, upload it; otherwise, use an empty array.
+      const mediaUrls = productMedia.length > 0 ? await uploadMediaFiles(productMedia, user.user_id) : [];
   
       // Insert product data into the 'new_products' table
       const { error: dbError } = await supabase
         .from('new_products')
         .insert({
           user_id: user.user_id,
-          user_name: userName,  // Add the user's name here
-          name: productName,
-          description: productDescription,
-          price_inr: parseFloat(productPrice),
+          user_name: userName,
+          name: productName || '', // Product name is optional
+          description: productDescription || '', // Product description is optional
+          price_inr: priceInr,
           media_urls: mediaUrls,
-          category: category,
-          discount_rate: discountRate,  // Store the discount rate
-          discounted_price: discountedPrice,  // Store the discounted price
+          category: category || '', // Category is optional
+          discount_rate: discountRate, // Store the discount rate
+          discounted_price: discountedPrice, // Store the discounted price
         });
   
       if (dbError) throw new Error('Failed to save product.');
@@ -237,7 +235,7 @@ const [discountedPrice, setDiscountedPrice] = useState<number>(0); // New state 
       setUploading(false);
     }
   };
-      
+        
   const handleEdit = (product: Product) => {
     setEditingProductId(product.id);
     setUpdatedName(product.name);
@@ -245,6 +243,7 @@ const [discountedPrice, setDiscountedPrice] = useState<number>(0); // New state 
     setUpdatedPrice(product.price_inr.toString());
     setEditMediaPreviews(product.media_urls);
     setUpdatedMedia([]);
+    setCategory(product.category); // Set the category to the current product's category
   };
 
   const handleCancelEdit = () => {
@@ -386,12 +385,16 @@ const [discountedPrice, setDiscountedPrice] = useState<number>(0); // New state 
     className={styles.select}
   >
     <option value="">Select a category</option>
-    <option value="electronics">Grocery</option>
-    <option value="electronics">Books</option>
-    <option value="electronics">Electronics</option>
-    <option value="fashion">Fashion</option>
-    <option value="furniture">Furniture</option>
-    <option value="books">Others</option>
+    <option value="Grocery">Grocery</option>
+    <option value="Instant Foods">Instant Foods</option>
+    <option value="Snacks">Snacks</option>
+    <option value="Soft Drinks and Juices">Soft Drinks and Juices</option>
+    <option value="Books & Stationary">Books & Stationary</option>
+    <option value="Personal Hygiene and Health">Personal Hygiene and Health</option>
+    <option value="Electronics">Electronics</option>
+    <option value="Fashion">Fashion</option>
+    <option value="Furniture">Furniture</option>
+    <option value="Others">Others</option>
     {/* Add more categories here */}
   </select>
 </div>
@@ -500,22 +503,26 @@ const [discountedPrice, setDiscountedPrice] = useState<number>(0); // New state 
             </div>
             <div className={styles.formGroup}>
   <label htmlFor="productCategory">Product Category</label>
-  <select
+   <select
     id="productCategory"
     value={category}
-    onChange={(e) => setCategory(e.target.value)}
+    onChange={(e) => setCategory(e.target.value)} // Handle category change
     className={styles.select}
   >
     <option value="">Select a category</option>
-    <option value="electronics">Electronics</option>
-    <option value="fashion">Fashion</option>
-    <option value="furniture">Furniture</option>
-    <option value="books">Books</option>
+    <option value="Grocery">Grocery</option>
+    <option value="Instant Foods">Instant Foods</option>
+    <option value="Snacks">Snacks</option>
+    <option value="Soft Drinks and Juices">Soft Drinks and Juices</option>
+    <option value="Books & Stationary">Books & Stationary</option>
+    <option value="Personal Hygiene and Health">Personal Hygiene and Health</option>
+    <option value="Electronics">Electronics</option>
+    <option value="Fashion">Fashion</option>
+    <option value="Furniture">Furniture</option>
+    <option value="Others">Others</option>
     {/* Add more categories here */}
   </select>
 </div>
-
-
             <button onClick={handleSaveChanges} className={styles.saveButton}>Save Changes</button>
             <button onClick={handleCancelEdit} className={styles.cancelButton}>Cancel</button>
           </div>

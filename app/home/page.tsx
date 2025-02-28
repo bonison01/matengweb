@@ -64,8 +64,10 @@ export default function DiscoverPage() {
           </div>
         </div>
       </div>
+      <div>
       <footer className={styles.footer}>
       </footer>
+      </div>
     </>
   );
 }
