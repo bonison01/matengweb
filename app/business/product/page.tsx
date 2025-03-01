@@ -39,8 +39,8 @@ export default function ProductUploadPage() {
   const [error, setError] = useState<string | null>(null);
   const [category, setCategory] = useState<string>('');  // New state for category
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [discountRate, setDiscountRate] = useState<number>(0); // New state for discount rate
-const [discountedPrice, setDiscountedPrice] = useState<number>(0); // New state for discounted price
+  const [discountRate, setDiscountRate] = useState<number>(); // New state for discount rate
+const [discountedPrice, setDiscountedPrice] = useState<number>(); // New state for discounted price
 
 
   useEffect(() => {
@@ -260,27 +260,31 @@ const [discountedPrice, setDiscountedPrice] = useState<number>(0); // New state 
       setError('All fields are required.');
       return;
     }
-
+  
     setError(null);
     setSuccessMessage(null);
-
+  
     try {
       const mediaUrls = updatedMedia.length > 0
         ? await uploadMediaFiles(updatedMedia, user?.user_id || '')
         : editMediaPreviews;
-
+  
+      const updatedProductData = {
+        name: updatedName,
+        description: updatedDescription,
+        price_inr: parseFloat(updatedPrice),
+        media_urls: mediaUrls,
+        category: category,
+        discounted_price: discountedPrice || null,  // Use the updated discounted price
+      };
+  
       const { error: updateError } = await supabase
         .from('new_products')
-        .update({
-          name: updatedName,
-          description: updatedDescription,
-          price_inr: parseFloat(updatedPrice),
-          media_urls: mediaUrls,
-        })
+        .update(updatedProductData)
         .eq('id', editingProductId);
-
+  
       if (updateError) throw new Error('Failed to update product.');
-
+  
       setSuccessMessage('Product updated successfully!');
       handleCancelEdit();
       fetchProducts(user?.user_id || '');
@@ -288,8 +292,7 @@ const [discountedPrice, setDiscountedPrice] = useState<number>(0); // New state 
       setError(err instanceof Error ? err.message : 'An unknown error occurred.');
     }
   };
-
-  return (
+    return (
     <div className={styles.container}>
       <h1 className={styles.title}>Upload Product</h1>
 
@@ -342,15 +345,15 @@ const [discountedPrice, setDiscountedPrice] = useState<number>(0); // New state 
 </div>
 
 <div className={styles.formGroup}>
-  <label htmlFor="discountedPrice">Discounted Price (INR)</label>
-  <input
-    id="discountedPrice"
-    type="number"
-    value={discountedPrice.toFixed(2)}
-    disabled
-    className={styles.input}
-  />
-</div>
+        <label htmlFor="updatedDiscountedPrice">Discounted Price (INR)</label>
+        <input
+          id="updatedDiscountedPrice"
+          type="number"
+          value={discountedPrice}
+          onChange={(e) => setDiscountedPrice(parseFloat(e.target.value))}
+          className={styles.input}
+        />
+      </div>
 
 
         <div className={styles.formGroup}>
@@ -439,95 +442,113 @@ const [discountedPrice, setDiscountedPrice] = useState<number>(0); // New state 
 
 
       {/* Edit Modal */}
-      {editingProductId && (
-        <div className={styles.editModalOverlay}>
-          <div className={styles.editModal}>
-            <h3>Edit Product</h3>
-            <div className={styles.formGroup}>
-              <label htmlFor="updatedName">Product Name</label>
-              <input
-                id="updatedName"
-                type="text"
-                value={updatedName}
-                onChange={(e) => setUpdatedName(e.target.value)}
-                className={styles.input}
-              />
-            </div>
+{/* Edit Modal */}
+{editingProductId && (
+  <div className={styles.editModalOverlay}>
+    <div className={styles.editModal}>
+      <h3>Edit Product</h3>
+      <div className={styles.formGroup}>
+        <label htmlFor="updatedName">Product Name</label>
+        <input
+          id="updatedName"
+          type="text"
+          value={updatedName}
+          onChange={(e) => setUpdatedName(e.target.value)}
+          className={styles.input}
+        />
+      </div>
 
-            <div className={styles.formGroup}>
-              <label htmlFor="updatedDescription">Product Description</label>
-              <textarea
-                id="updatedDescription"
-                value={updatedDescription}
-                onChange={(e) => setUpdatedDescription(e.target.value)}
-                className={styles.textarea}
-              />
-            </div>
+      <div className={styles.formGroup}>
+        <label htmlFor="updatedDescription">Product Description</label>
+        <textarea
+          id="updatedDescription"
+          value={updatedDescription}
+          onChange={(e) => setUpdatedDescription(e.target.value)}
+          className={styles.textarea}
+        />
+      </div>
 
-            <div className={styles.formGroup}>
-              <label htmlFor="updatedPrice">Product Price (INR)</label>
-              <input
-                id="updatedPrice"
-                type="number"
-                value={updatedPrice}
-                onChange={(e) => setUpdatedPrice(e.target.value)}
-                className={styles.input}
-              />
-            </div>
-            
+      <div className={styles.formGroup}>
+        <label htmlFor="updatedPrice">Product Price (INR)</label>
+        <input
+          id="updatedPrice"
+          type="number"
+          value={updatedPrice}
+          onChange={(e) => setUpdatedPrice(e.target.value)}
+          className={styles.input}
+        />
+      </div>
 
-            <div className={styles.formGroup}>
-              <label htmlFor="updatedMedia">Update Images/Videos</label>
-              <input
-                id="updatedMedia"
-                type="file"
-                accept="image/*,video/*"
-                multiple
-                onChange={(e) => handleMediaChange(e, true)}
-                className={styles.fileInput}
+      {/* Discounted Price Editable */}
+      <div className={styles.formGroup}>
+        <label htmlFor="updatedDiscountedPrice">Discounted Price (INR)</label>
+        <input
+          id="updatedDiscountedPrice"
+          type="number"
+          value={discountedPrice}
+          onChange={(e) => setDiscountedPrice(parseFloat(e.target.value))}
+          className={styles.input}
+        />
+      </div>
+
+      <div className={styles.formGroup}>
+        <label htmlFor="updatedMedia">Update Images/Videos</label>
+        <input
+          id="updatedMedia"
+          type="file"
+          accept="image/*,video/*"
+          multiple
+          onChange={(e) => handleMediaChange(e, true)}
+          className={styles.fileInput}
+        />
+        <div className={styles.previews}>
+          {editMediaPreviews.map((url, index) => (
+            <div key={index} className={styles.preview}>
+              <img
+                src={url}
+                alt={`Edit Preview ${index}`}
+                className={styles.thumbnail}
               />
-              <div className={styles.previews}>
-                {editMediaPreviews.map((url, index) => (
-                  <div key={index} className={styles.preview}>
-                    <img
-                      src={url}
-                      alt={`Edit Preview ${index}`}
-                      className={styles.thumbnail}
-                    />
-                  </div>
-                ))}
-                {updatedMedia.map((file, index) => (
-                  <div key={index} className={styles.preview}>New</div>
-                ))}
-              </div>
             </div>
-            <div className={styles.formGroup}>
-  <label htmlFor="productCategory">Product Category</label>
-   <select
-    id="productCategory"
-    value={category}
-    onChange={(e) => setCategory(e.target.value)} // Handle category change
-    className={styles.select}
-  >
-    <option value="">Select a category</option>
-    <option value="Grocery">Grocery</option>
-    <option value="Instant Foods">Instant Foods</option>
-    <option value="Snacks">Snacks</option>
-    <option value="Soft Drinks and Juices">Soft Drinks and Juices</option>
-    <option value="Books & Stationary">Books & Stationary</option>
-    <option value="Personal Hygiene and Health">Personal Hygiene and Health</option>
-    <option value="Electronics">Electronics</option>
-    <option value="Fashion">Fashion</option>
-    <option value="Furniture">Furniture</option>
-    <option value="Others">Others</option>
-    {/* Add more categories here */}
-  </select>
-</div>
-            <button onClick={handleSaveChanges} className={styles.saveButton}>Save Changes</button>
-            <button onClick={handleCancelEdit} className={styles.cancelButton}>Cancel</button>
-          </div>
+          ))}
+          {updatedMedia.map((file, index) => (
+            <div key={index} className={styles.preview}>New</div>
+          ))}
         </div>
-      )}
+      </div>
+
+      <div className={styles.formGroup}>
+        <label htmlFor="productCategory">Product Category</label>
+        <select
+          id="productCategory"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)} // Handle category change
+          className={styles.select}
+        >
+          <option value="">Select a category</option>
+          <option value="Grocery">Grocery</option>
+          <option value="Instant Foods">Instant Foods</option>
+          <option value="Snacks">Snacks</option>
+          <option value="Soft Drinks and Juices">Soft Drinks and Juices</option>
+          <option value="Books & Stationary">Books & Stationary</option>
+          <option value="Personal Hygiene and Health">Personal Hygiene and Health</option>
+          <option value="Electronics">Electronics</option>
+          <option value="Fashion">Fashion</option>
+          <option value="Furniture">Furniture</option>
+          <option value="Others">Others</option>
+          {/* Add more categories here */}
+        </select>
+      </div>
+
+      <button onClick={handleSaveChanges} className={styles.saveButton}>
+        Save Changes
+      </button>
+      <button onClick={handleCancelEdit} className={styles.cancelButton}>
+        Cancel
+      </button>
+    </div>
+  </div>
+)}
     </div>
   );
 }
