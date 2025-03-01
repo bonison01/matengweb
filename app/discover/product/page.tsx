@@ -35,6 +35,19 @@ const AllProductMediaPage = () => {
   const router = useRouter();
   const { addToCart } = useCart();
 
+  const predefinedCategories = [
+    "Grocery",
+    "Instant Foods",
+    "Snacks",
+    "Soft Drinks and Juices",
+    "Books & Stationary",
+    "Personal Hygiene and Health",
+    "Electronics",
+    "Fashion",
+    "Furniture",
+    "Others"
+  ];
+
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -42,20 +55,19 @@ const AllProductMediaPage = () => {
         if (error) throw new Error(error.message);
         setProducts(data || []);
 
-        const allCategories = [...new Set(data?.map((product) => product.category))];
+        // Filter categories based on predefined categories list
+        const allCategories = predefinedCategories.filter((category) => data?.some((product) => product.category === category));
         setCategories(allCategories);
 
-        // Group products by category
-        const groupedByCategory = data?.reduce((acc: { [key: string]: Product[] }, product) => {
-          if (product.category) {
-            if (!acc[product.category]) {
-              acc[product.category] = [];
-            }
-            acc[product.category].push(product);
+        // Group products by category based on predefined categories
+        const groupedByCategory = predefinedCategories.reduce((acc: { [key: string]: Product[] }, category) => {
+          const categoryProducts = data?.filter((product) => product.category === category) || [];
+          if (categoryProducts.length > 0) {
+            acc[category] = categoryProducts;
           }
           return acc;
         }, {});
-        setCategoryWiseProducts(groupedByCategory || {});
+        setCategoryWiseProducts(groupedByCategory);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An unexpected error occurred.');
       } finally {
@@ -129,7 +141,7 @@ const AllProductMediaPage = () => {
       {/* Category Filter */}
       <div className={styles.categoryButtons}>
         <div className="hidden md:block">
-          {categories.map((category, index) => (
+          {predefinedCategories.map((category, index) => (
             <button
               key={index}
               className={`${styles.categoryButton} ${selectedCategory === category ? styles.selected : ''}`}
@@ -161,7 +173,7 @@ const AllProductMediaPage = () => {
             }}
           >
             <option value="">All Categories</option>
-            {categories.map((category, index) => (
+            {predefinedCategories.map((category, index) => (
               <option key={index} value={category}>
                 {category}
               </option>
@@ -189,7 +201,7 @@ const AllProductMediaPage = () => {
       </a>
 
       {/* Render Products Category-wise */}
-      {categories.map((category) => {
+      {predefinedCategories.map((category) => {
         if (selectedCategory && selectedCategory !== category) return null; // Filter categories based on selection
 
         const categoryProducts = categoryWiseProducts[category] || [];
@@ -212,20 +224,18 @@ const AllProductMediaPage = () => {
                   </div>
                   <div>
                     <div className={styles.productInfo}>
-                      
                       <h2>{product.name}</h2>
                       <h2>{product.description}</h2>
-                      
                       <h3 className="text-sm mb-1 line-through">MRP:{product.price_inr}</h3>
                       <h4 className="text-sm mb-1">Discount Price: Rs. {product.discounted_price}</h4>
                     </div>
                     <button
-            className={styles.buyNowButton}
-            onClick={() => handleAddToCart(product)} // Add to Cart action
-            aria-label="Add to Cart"
-          >
-            Add to Cart🛒
-          </button>
+                      className={styles.buyNowButton}
+                      onClick={() => handleAddToCart(product)} // Add to Cart action
+                      aria-label="Add to Cart"
+                    >
+                      Add to Cart🛒
+                    </button>
                     <div className={styles.actionIcons}>
                       {product.phone && (
                         <button className={styles.callIcon} onClick={() => handleCall(product.phone)} aria-label="Call">
