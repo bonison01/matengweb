@@ -18,6 +18,7 @@ interface Product {
   price_inr: string;
   price?: string;
   category?: string;
+  discounted_price: string;
 }
 
 const AllProductMediaPage = () => {
@@ -209,11 +210,20 @@ const AllProductMediaPage = () => {
                       );
                     })}
                   </div>
-
                   <div className={styles.overlay}>
                     <div className={styles.productInfo}>
+                      
                       <h2 className={styles.productName}>{product.name}</h2>
+                      <h3 className="text-sm mb-4 text-center line-through">MRP:{product.price_inr}</h3>
+                      <h4 className="text-sm mb-4 text-center">Discount Price: Rs. {product.discounted_price}</h4>
                     </div>
+                    <button
+            className={styles.buyNowButton}
+            onClick={() => handleAddToCart(product)} // Add to Cart action
+            aria-label="Add to Cart"
+          >
+            Add to Cart🛒
+          </button>
                     <div className={styles.actionIcons}>
                       {product.phone && (
                         <button className={styles.callIcon} onClick={() => handleCall(product.phone)} aria-label="Call">
@@ -248,7 +258,7 @@ const AllProductMediaPage = () => {
               ✖️
             </button>
             <h2 className={styles.productName}>{selectedProduct.name}</h2>
-            <p className={styles.productDescription}>{selectedProduct.description}</p>
+            <h2 className={styles.productName}>{selectedProduct.price}</h2>
             <p className={styles.productCategory}>Category: {selectedProduct.category || 'N/A'}</p>
             <div className={styles.modalMedia}>
               {selectedProduct.media_urls.map((url, index) => {
