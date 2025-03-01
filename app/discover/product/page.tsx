@@ -210,12 +210,12 @@ const AllProductMediaPage = () => {
                       );
                     })}
                   </div>
-                  <div className={styles.overlay}>
+                  <div>
                     <div className={styles.productInfo}>
                       
-                      <h2 className={styles.productName}>{product.name}</h2>
-                      <h3 className="text-sm mb-4 text-center line-through">MRP:{product.price_inr}</h3>
-                      <h4 className="text-sm mb-4 text-center">Discount Price: Rs. {product.discounted_price}</h4>
+                      <h2>{product.name}</h2>
+                      <h3 className="text-sm mb-1 line-through">MRP:{product.price_inr}</h3>
+                      <h4 className="text-sm mb-1">Discount Price: Rs. {product.discounted_price}</h4>
                     </div>
                     <button
             className={styles.buyNowButton}

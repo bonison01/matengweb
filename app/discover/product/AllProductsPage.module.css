@@ -234,29 +234,11 @@
 .productInfo {
   max-width: 70%;
 }
-/* Styling for Product Name */
+
 .productName {
-  font-size: 12px; /* Smaller font size */
-  font-weight: bold;
-  margin-bottom: 5px;
-}
-
-/* Styling for the MRP (Original Price) */
-.productPrice {
-  font-size: 10px; /* Smaller font size */
-  color: #666;
-  text-decoration: line-through;
-  margin-bottom: 4px;
-}
-
-/* Styling for Discounted Price */
-.discountedPrice {
-  font-size: 12px; /* Smaller font size */
-  color: #4caf50; /* Green color for discounted price */
+  font-size: 9px;
   font-weight: bold;
 }
-
-
 
 .productDescription {
   font-size: 14px;
@@ -274,7 +256,7 @@
 }
 
 .actionIcons button:hover {
-  color: #00990f;
+  color: #ffeb3b;
 }
 
 .infoButton {
