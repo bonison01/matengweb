@@ -214,6 +214,8 @@ const AllProductMediaPage = () => {
                     <div className={styles.productInfo}>
                       
                       <h2>{product.name}</h2>
+                      <h2>{product.description}</h2>
+                      
                       <h3 className="text-sm mb-1 line-through">MRP:{product.price_inr}</h3>
                       <h4 className="text-sm mb-1">Discount Price: Rs. {product.discounted_price}</h4>
                     </div>
@@ -259,6 +261,7 @@ const AllProductMediaPage = () => {
             </button>
             <h2 className={styles.productName}>{selectedProduct.name}</h2>
             <h2 className={styles.productName}>{selectedProduct.price}</h2>
+            <h2 className={styles.productName}>{selectedProduct.description}</h2>
             <p className={styles.productCategory}>Category: {selectedProduct.category || 'N/A'}</p>
             <div className={styles.modalMedia}>
               {selectedProduct.media_urls.map((url, index) => {
