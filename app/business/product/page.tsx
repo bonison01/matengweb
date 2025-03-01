@@ -39,7 +39,7 @@ export default function ProductUploadPage() {
   const [error, setError] = useState<string | null>(null);
   const [category, setCategory] = useState<string>('');  // New state for category
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [discountRate, setDiscountRate] = useState<number>(); // New state for discount rate
+  const [discountRate, setDiscountRate] = useState<number>(0); // New state for discount rate
 const [discountedPrice, setDiscountedPrice] = useState<number>(); // New state for discounted price
 
 
