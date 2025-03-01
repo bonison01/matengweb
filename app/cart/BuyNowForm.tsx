@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabaseClient';
+import { useRouter } from 'next/navigation';
 
 interface CartItem {
   id: number;
@@ -12,15 +13,32 @@ interface CartItem {
 
 interface BuyNowFormProps {
   items: CartItem[];
+  totalPrice: number;
   onClose: () => void;
+  onOrderPlaced: (generatedOrderId: string) => void;
 }
 
-const BuyNowForm: React.FC<BuyNowFormProps> = ({ items, onClose }) => {
+const BuyNowForm: React.FC<BuyNowFormProps> = ({ items, totalPrice, onClose, onOrderPlaced }) => {
   const [name, setName] = useState('');
   const [address, setAddress] = useState('');
   const [phone, setPhone] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [orderId, setOrderId] = useState('');
+  const [orderId, setOrderId] = useState<string | null>(null);
+  const [showOrderIdPopup, setShowOrderIdPopup] = useState(false);
+  const [totalCalculatedPrice, setTotalCalculatedPrice] = useState<number>(0);  // Store total calculated price
+  const router = useRouter();
+
+  useEffect(() => {
+    // Calculate total price based on items and update the state
+    const calculatedPrice = items.reduce((acc, item) => {
+      const itemTotal = item.price ? parseFloat(item.price) * item.qty : 0;
+      return acc + itemTotal;
+    }, 0);
+    setTotalCalculatedPrice(calculatedPrice);
+  }, [items]);  // Recalculate total price when items change
+
+  // Use totalPrice directly from props to display adjusted price
+  const displayTotalPrice = totalPrice || totalCalculatedPrice;
 
   const generateOrderId = () => `ORD-${Math.floor(100000 + Math.random() * 900000)}`;
 
@@ -48,11 +66,6 @@ const BuyNowForm: React.FC<BuyNowFormProps> = ({ items, onClose }) => {
       const products = await fetchEmailsAndBusiness();
       const email = products[0]?.email || '';
 
-      const totalPrice = items.reduce((acc, item) => {
-        const itemTotal = item.price ? parseFloat(item.price) * item.qty : 0;
-        return acc + itemTotal;
-      }, 0);
-
       const orderData = {
         order_id: generatedOrderId,
         buyer_name: name,
@@ -60,7 +73,7 @@ const BuyNowForm: React.FC<BuyNowFormProps> = ({ items, onClose }) => {
         buyer_phone: phone,
         business_id: products[0]?.business_id || '',
         email,
-        total_price: totalPrice.toFixed(2),
+        total_calculated_price: displayTotalPrice.toFixed(2),  // Store total_calculated_price instead of total_price
         item_list: items.map((item) => ({
           id: item.id,
           name: item.name,
@@ -70,31 +83,33 @@ const BuyNowForm: React.FC<BuyNowFormProps> = ({ items, onClose }) => {
         })),
       };
 
-      console.log('Order Data:', JSON.stringify(orderData, null, 2));
-
+      // Insert order data into Supabase
       const { data, error } = await supabase.from('order_rec').insert(orderData);
 
       if (error) {
-        console.error('Supabase Error:', error);
+        console.error('Error submitting order:', error);
         throw error;
       }
 
+      console.log('Order successfully placed:', data);
+      console.log('Generated Order ID:', generatedOrderId);
+
       setOrderId(generatedOrderId);
-      alert(`Order submitted successfully! Your Order ID is ${generatedOrderId}`);
+      setShowOrderIdPopup(true);
+
+      // Redirect to the order confirmation page
+      router.push(`/order/${generatedOrderId}`);
+
+      // Close the form
       onClose();
-    } catch (error) {
-      console.error('Error submitting order:', error);
-      alert('Failed to submit order. Please try again.');
+      onOrderPlaced(generatedOrderId);  // Trigger callback with order ID
+    } catch (error: any) {
+      console.error('Error during order submission:', error);
+      alert(`Failed to submit order. Please try again. Error: ${error.message || error}`);
     } finally {
       setIsSubmitting(false);
     }
   };
-
-  const calculateTotal = () =>
-    items.reduce((acc, item) => {
-      const itemTotal = item.price ? parseFloat(item.price) * item.qty : 0;
-      return acc + itemTotal;
-    }, 0);
 
   const containerStyles: React.CSSProperties = {
     position: 'fixed',
@@ -169,16 +184,19 @@ const BuyNowForm: React.FC<BuyNowFormProps> = ({ items, onClose }) => {
               <p>
                 <strong>Total:</strong>{' '}
                 {item.price
-                  ? `$${(parseFloat(item.price) * item.qty).toFixed(2)}`
+                  ? `₹${(parseFloat(item.price) * item.qty).toFixed(2)}`
                   : 'N/A'}
               </p>
               <hr style={{ margin: '1rem 0', borderColor: '#444' }} />
             </div>
           ))}
         </div>
+
+        {/* Display Total Price */}
         <p style={{ marginBottom: '1rem' }}>
-          <strong>Grand Total:</strong> ${calculateTotal().toFixed(2)}
+          <strong>Total Price:</strong> ₹{displayTotalPrice.toFixed(2)}
         </p>
+
         <form onSubmit={handleSubmit}>
           <div style={{ marginBottom: '1rem' }}>
             <label htmlFor="name">Name</label>
@@ -228,22 +246,29 @@ const BuyNowForm: React.FC<BuyNowFormProps> = ({ items, onClose }) => {
             Cancel
           </button>
         </form>
-
-        {orderId && (
-          <div
-            style={{
-              marginTop: '1rem',
-              background: '#2ecc71',
-              color: 'white',
-              padding: '0.5rem',
-              borderRadius: '0.25rem',
-              textAlign: 'center',
-            }}
-          >
-            Your Order ID: <strong>{orderId}</strong>
-          </div>
-        )}
       </div>
+
+      {showOrderIdPopup && (
+        <div
+          style={{
+            position: 'fixed',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            backgroundColor: '#2ecc71',
+            color: 'white',
+            padding: '1rem',
+            borderRadius: '0.5rem',
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.2)',
+            zIndex: 9999,
+          }}
+        >
+          <p>Your Order ID: <strong>{orderId}</strong></p>
+          <button onClick={() => setShowOrderIdPopup(false)} style={cancelButtonStyles}>
+            Close
+          </button>
+        </div>
+      )}
     </div>
   );
 };

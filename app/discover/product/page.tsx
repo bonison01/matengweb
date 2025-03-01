@@ -195,7 +195,7 @@ const AllProductMediaPage = () => {
 
       <a
         href="/cart"
-        className="text-2xl font-bold mb-5 text-gray-500 hover:text-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="text-2xl font-bold mb-5 text-black-500 hover:text-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
       >
         My carts🛒
       </a>
@@ -224,8 +224,9 @@ const AllProductMediaPage = () => {
                   </div>
                   <div>
                     <div className={styles.productInfo}>
-                      <h2>{product.name}</h2>
-                      <h2>{product.description}</h2>
+                    <h2 style={{ fontWeight: 'bold' }}>{product.name}</h2>
+                    <h3 style={{ fontSize: '0.475rem', color: '#555' }}>{product.description}</h3>
+
                       <h3 className="text-sm mb-1 line-through">MRP:{product.price_inr}</h3>
                       <h4 className="text-sm mb-1">Discount Price: Rs. {product.discounted_price}</h4>
                     </div>
