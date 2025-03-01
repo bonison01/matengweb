@@ -25,6 +25,7 @@ interface Product {
   description: string;
   price_inr: number;
   media_urls: string[];
+  discounted_price: string;
 }
 
 export default function BusinessPage() {

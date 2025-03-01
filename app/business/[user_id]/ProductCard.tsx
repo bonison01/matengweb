@@ -86,7 +86,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onBuyNow, addCartIco
 
       <h3 className="text-lg font-semibold text-gray-800 mb-2 text-center">{product.name}</h3>
       <p className="text-sm text-gray-600 mb-4 text-center">{product.description}</p>
-      <p className="text-sm text-gray-600 mb-4 text-center">Rs. {product.price_inr}</p>
+      <p className="text-sm text-gray-600 mb-4 text-center">MRP: Rs. {product.price_inr}</p>
       <p className="text-sm text-gray-600 mb-4 text-center">Discount Price: Rs. {product.discounted_price}</p>
       <div className="flex gap-4">
       </div>
