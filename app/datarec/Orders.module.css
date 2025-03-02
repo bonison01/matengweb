@@ -1,18 +1,18 @@
 /* Orders.module.css */
 
-/* Common Styles */
 .container {
+    background-color: black;
+    color: white;
     padding: 20px;
+    border-radius: 8px;
     font-family: Arial, sans-serif;
-    color: #fff; /* White text for black background */
-    background-color: #000; /* Black background */
   }
   
   .title {
     text-align: center;
+    color: #fff;
     font-size: 2rem;
     margin-bottom: 20px;
-    color: #fff; /* Ensure title is visible */
   }
   
   .table {
@@ -21,102 +21,139 @@
     margin-top: 20px;
   }
   
-  .th, .td {
+  .table th,
+  .table td {
     padding: 12px;
     text-align: left;
-    border: 1px solid #444; /* Darker border for contrast */
+    border-bottom: 1px solid #444;
   }
   
-  .th {
-    background-color: #333; /* Dark gray header for contrast */
-    font-weight: bold;
-    color: #fff; /* White text for header */
+  .table th {
+    background-color: #333;
   }
   
-  .td {
-    background-color: #222; /* Slightly lighter background for table cells */
-    color: #fff; /* White text for table data */
+  .table tr:nth-child(even) {
+    background-color: #222;
+  }
+  
+  .table input {
+    background-color: #333;
+    color: white;
+    border: 1px solid #555;
+    padding: 8px;
+    width: 100%;
+    border-radius: 4px;
+  }
+  
+  .table input:focus {
+    outline: none;
+    border-color: #77d1e8;
+    background-color: #444;
+  }
+  
+  .button {
+    background-color: #77d1e8;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .button:hover {
+    background-color: #55a9c9;
+  }
+  
+  .button:focus {
+    outline: none;
+  }
+  
+  .input[type="text"] {
+    background-color: #333;
+    color: white;
+    border: 1px solid #555;
+  }
+  
+  .input[type="number"] {
+    background-color: #333;
+    color: white;
+    border: 1px solid #555;
+  }
+  
+  .div {
+    margin-bottom: 20px;
+  }
+  
+  .input[type="text"],
+  .button {
+    margin-right: 10px;
+  }
+  
+  .input[type="text"] {
+    width: 200px;
+    padding: 8px;
+    background-color: #333;
+    color: white;
+    border: 1px solid #555;
+    border-radius: 4px;
+  }
+  
+  .input[type="text"]:focus {
+    outline: none;
+    border-color: #77d1e8;
+    background-color: #444;
   }
   
   .p {
+    color: #fff;
     text-align: center;
-    font-size: 1.2rem;
-    color: #fff; /* White text for the "No orders available" message */
+  }
+  /* Add these styles for the search functionality */
+
+.searchContainer {
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: center; /* Center align the search box */
   }
   
-  /* Mobile View Styles (default) */
-  @media (max-width: 768px) {
-    .table {
-      border: 0;
-    }
-  
-    .th, .td {
-      padding: 10px;
-      font-size: 14px;
-    }
-  
-    .title {
-      font-size: 1.6rem;
-      margin-bottom: 10px;
-    }
-  
-    .container {
-      padding: 10px;
-    }
-  
-    .table thead {
-      display: none; /* Hide the header row */
-    }
-  
-    .table tr {
-      display: block;
-      margin-bottom: 15px;
-      border: 1px solid #444; /* Dark border for mobile */
-    }
-  
-    .table td {
-      display: block;
-      text-align: right;
-      font-size: 14px;
-      position: relative;
-      padding-left: 50%; /* Creates space for labels */
-      color: #fff; /* Ensure text is readable */
-    }
-  
-    .table td::before {
-      content: attr(data-label);
-      position: absolute;
-      left: 10px;
-      font-weight: bold;
-      color: #fff; /* White label for mobile */
-    }
-  
-    /* Show the item list more compactly */
-    .table td[data-label="Item List"] {
-      font-size: 12px;
-      overflow-x: auto;
-    }
+  .searchInput {
+    background-color: #333;
+    color: white;
+    border: 1px solid #555;
+    padding: 10px;
+    width: 300px;
+    border-radius: 4px;
+    font-size: 16px;
   }
   
-  /* Desktop View Styles */
-  @media (min-width: 769px) {
-    .table {
-      border: 1px solid #444; /* Darker border for desktop */
-    }
-  
-    .table th, .table td {
-      padding: 12px;
-      font-size: 16px;
-    }
-  
-    .title {
-      font-size: 2rem;
-      margin-bottom: 20px;
-    }
-  
-    /* Adjust table layout for larger screens */
-    .table td {
-      word-wrap: break-word;
-    }
+  .searchInput:focus {
+    outline: none;
+    border-color: #77d1e8;
+    background-color: #444;
   }
+  /* Add styles for the category filter dropdown */
+
+.categoryFilter {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+  }
+  
+  .categorySelect {
+    background-color: #333;
+    color: white;
+    border: 1px solid #555;
+    padding: 10px;
+    width: 300px;
+    border-radius: 4px;
+    font-size: 16px;
+  }
+  
+  .categorySelect:focus {
+    outline: none;
+    border-color: #77d1e8;
+    background-color: #444;
+  }
+  
   

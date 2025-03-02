@@ -17,7 +17,7 @@ interface Order {
   email: string;
   created_at: string;
   status: string;
-  item_list: { id: number; name: string; price: number; total: number; quantity: number }[]; // Assuming item_list is an array of objects
+  item_list: { id: number; name: string; price: number; total: number; quantity: number }[];
   total_price: number;
   total_calculated_price: number;
 }
@@ -42,6 +42,36 @@ const Orders = () => {
     fetchOrders();
   }, []); // Empty dependency array means it runs once when the component mounts
 
+  // Function to handle input change
+  const handleInputChange = (orderId: number, field: string, value: string) => {
+    setOrders((prevOrders) =>
+      prevOrders.map((order) =>
+        order.id === orderId ? { ...order, [field]: value } : order
+      )
+    );
+  };
+
+  // Function to handle save (update) for a particular order
+  const handleSave = async (orderId: number) => {
+    const orderToUpdate = orders.find((order) => order.id === orderId);
+    if (!orderToUpdate) return;
+
+    const { data, error } = await supabase
+      .from('order_rec')
+      .update({
+        quantity: orderToUpdate.quantity,
+        status: orderToUpdate.status,
+        buyer_name: orderToUpdate.buyer_name,
+      })
+      .eq('id', orderId);
+
+    if (error) {
+      console.error('Error updating order:', error.message);
+    } else {
+      console.log('Order updated successfully:', data);
+    }
+  };
+
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>Order List</h1>
@@ -64,6 +94,7 @@ const Orders = () => {
               <th>Item List</th>
               <th>Total Price</th>
               <th>Total Calculated Price</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -73,16 +104,52 @@ const Orders = () => {
                 <td>{order.order_id}</td>
                 <td>{order.product_id}</td>
                 <td>{order.product_name}</td>
-                <td>{order.quantity}</td>
-                <td>{order.buyer_name}</td>
+
+                {/* Editable Quantity */}
+                <td>
+                  <input
+                    type="number"
+                    value={order.quantity ?? ''}  // Use empty string if null
+                    onChange={(e) =>
+                      handleInputChange(order.id, 'quantity', e.target.value)
+                    }
+                  />
+                  
+                </td>
+
+                {/* Editable Buyer Name */}
+                <td>
+                  <input
+                    type="text"
+                    value={order.buyer_name}
+                    onChange={(e) =>
+                      handleInputChange(order.id, 'buyer_name', e.target.value)
+                    }
+                  />
+                </td>
+
                 <td>{order.buyer_address}</td>
                 <td>{order.buyer_phone}</td>
                 <td>{order.business_id}</td>
                 <td>{order.email}</td>
                 <td>{new Date(order.created_at).toLocaleString()}</td>
-                <td>{order.status}</td>
 
-                {/* Handling item_list (assuming it's an array of objects) */}
+                {/* Editable Status */}
+                <td>
+                  <select
+                    value={order.status}
+                    onChange={(e) =>
+                      handleInputChange(order.id, 'status', e.target.value)
+                    }
+                  >
+                    <option value="pending">Pending</option>
+                    <option value="shipped">Shipped</option>
+                    <option value="delivered">Delivered</option>
+                    <option value="cancelled">Cancelled</option>
+                  </select>
+                </td>
+
+                {/* Item List */}
                 <td>
                   {order.item_list.map((item) => (
                     <div key={item.id}>
@@ -95,6 +162,11 @@ const Orders = () => {
 
                 <td>{order.total_price}</td>
                 <td>{order.total_calculated_price}</td>
+
+                {/* Save Button */}
+                <td>
+                  <button onClick={() => handleSave(order.id)}>Save</button>
+                </td>
               </tr>
             ))}
           </tbody>
