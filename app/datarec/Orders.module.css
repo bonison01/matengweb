@@ -1,0 +1,122 @@
+/* Orders.module.css */
+
+/* Common Styles */
+.container {
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    color: #fff; /* White text for black background */
+    background-color: #000; /* Black background */
+  }
+  
+  .title {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 20px;
+    color: #fff; /* Ensure title is visible */
+  }
+  
+  .table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+  
+  .th, .td {
+    padding: 12px;
+    text-align: left;
+    border: 1px solid #444; /* Darker border for contrast */
+  }
+  
+  .th {
+    background-color: #333; /* Dark gray header for contrast */
+    font-weight: bold;
+    color: #fff; /* White text for header */
+  }
+  
+  .td {
+    background-color: #222; /* Slightly lighter background for table cells */
+    color: #fff; /* White text for table data */
+  }
+  
+  .p {
+    text-align: center;
+    font-size: 1.2rem;
+    color: #fff; /* White text for the "No orders available" message */
+  }
+  
+  /* Mobile View Styles (default) */
+  @media (max-width: 768px) {
+    .table {
+      border: 0;
+    }
+  
+    .th, .td {
+      padding: 10px;
+      font-size: 14px;
+    }
+  
+    .title {
+      font-size: 1.6rem;
+      margin-bottom: 10px;
+    }
+  
+    .container {
+      padding: 10px;
+    }
+  
+    .table thead {
+      display: none; /* Hide the header row */
+    }
+  
+    .table tr {
+      display: block;
+      margin-bottom: 15px;
+      border: 1px solid #444; /* Dark border for mobile */
+    }
+  
+    .table td {
+      display: block;
+      text-align: right;
+      font-size: 14px;
+      position: relative;
+      padding-left: 50%; /* Creates space for labels */
+      color: #fff; /* Ensure text is readable */
+    }
+  
+    .table td::before {
+      content: attr(data-label);
+      position: absolute;
+      left: 10px;
+      font-weight: bold;
+      color: #fff; /* White label for mobile */
+    }
+  
+    /* Show the item list more compactly */
+    .table td[data-label="Item List"] {
+      font-size: 12px;
+      overflow-x: auto;
+    }
+  }
+  
+  /* Desktop View Styles */
+  @media (min-width: 769px) {
+    .table {
+      border: 1px solid #444; /* Darker border for desktop */
+    }
+  
+    .table th, .table td {
+      padding: 12px;
+      font-size: 16px;
+    }
+  
+    .title {
+      font-size: 2rem;
+      margin-bottom: 20px;
+    }
+  
+    /* Adjust table layout for larger screens */
+    .table td {
+      word-wrap: break-word;
+    }
+  }
+  
