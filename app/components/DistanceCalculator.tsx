@@ -404,6 +404,7 @@ const DistanceCalculator = () => {
       </div>
 
       <div className={styles.mapContainer}>
+        {/* 
         <MapContainer
           center={[24.817, 93.936]} // Default to Manipur
           zoom={13}
@@ -423,6 +424,7 @@ const DistanceCalculator = () => {
           </Marker>}
           {routeCoordinates.length > 0 && <Polyline positions={routeCoordinates} />}
         </MapContainer>
+        */}
       </div>
 
       {/* Popup */}
